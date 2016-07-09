@@ -1,0 +1,11 @@
+default['tomcat']['suffixes'] = %w{}
+default['tomcat']['root_dir'] = "/usr/local"
+default['tomcat']['user'] = "tomcat"
+default['tomcat']['group'] = "tomcat"
+default['tomcat']['version'] = "7"
+default['tomcat']['6']['version'] = "6.0.39"
+default['tomcat']['6']['url'] = "http://ftp.riken.jp/net/apache/tomcat/tomcat-6/v#{node['tomcat']['6']['version']}/bin/apache-tomcat-#{node['tomcat']['6']['version']}.tar.gz"
+default['tomcat']['7']['version'] = "7.0.53"
+default['tomcat']['7']['url'] = "http://ftp.yz.yamagata-u.ac.jp/pub/network/apache/tomcat/tomcat-7/v#{node['tomcat']['7']['version']}/bin/apache-tomcat-#{node['tomcat']['7']['version']}.tar.gz"
+default['tomcat']['java_home'] = "/usr/lib/jvm/jre"
+default['tomcat']['conf']['template_dir'] = nil

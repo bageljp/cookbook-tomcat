@@ -1,0 +1,39 @@
+#others='-d64 -server -Djava.awt.headless=true -Dawt.useSystemAAFontSettings=on'
+sizes='-Xms2048m -Xmx2048m -Xmn512m -XX:PermSize=256m -XX:MaxPermSize=256m'
+
+# eden領域とsurvivor領域の比率(eden÷survivor)
+survivorRatio='-XX:SurvivorRatio=8'
+# old領域に移動するまでの閾値
+maxTenuringThreshold='-XX:MaxTenuringThreshold=32'
+# survivor領域がいっぱいとみなされる比率
+targetSurvivorRatio='-XX:TargetSurvivorRatio=90'
+# 64bit JRE を使っている場合、オブジェクトへの参照のサイズを 32bit に圧縮する
+#useCompressedOops='-XX:+UseCompressedOops'
+
+# CMS向け設定
+cms='-XX:+UseConcMarkSweepGC -XX:+CMSParallelRemarkEnabled -XX:+UseParNewGC -XX:CMSInitiatingOccupancyFraction=50'
+#G1GC向け設定
+#g1gc='-XX:+UnlockExperimentalVMOptions -XX:+UseG1GC -XX:+UseBiasedLocking -XX:G1YoungGenSize=256m'
+
+# 簡易GC情報
+verbose='-verbose:gc'
+# GC情報のファイル出力
+loggc="-Xloggc:<%= node['tomcat']['root_dir'] %>/tomcat/logs/gc.log.$(date +%Y%m%d%H%M)"
+# タイムスタンプ
+printGCTimeStamps='-XX:+PrintGCDateStamps'
+# 詳細GC情報
+printGCDetails='-XX:-PrintGCDetails'
+# ヒープ内のクラス統計情報
+printClassHistogram='-XX:+PrintClassHistogram'
+# ヒープメモリ不足時にダンプファイルの出力先
+heapDumpPath='-XX:HeapDumpPath=/usr/local/tomcat/logs'
+# オブジェクトの年齢情報
+#printTenuringDistribution='-XX:+PrintTenuringDistribution'
+# エスケープ分析を実行
+#doEscapeAnalysis='-XX:+DoEscapeAnalysis'
+# JMX
+#jmx='-Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.port=8161 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false'
+# memcached-session-manager logging
+#logs='-Dnet.spy.log.LoggerImpl=net.spy.memcached.compat.log.SunLogger'
+
+CATALINA_OPTS="$others $sizes $survivorRatio $maxTenuringThreshold $targetSurvivorRatio $useCompressedOops $cms $g1gc $verbose $loggc $printGCTimeStamps $printGCDetails $printClassHistogram $printTenuringDistribution $jmx $logs $heapDumpPath"

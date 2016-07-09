@@ -1,0 +1,118 @@
+#!/bin/bash
+#
+# Startup script for the tomcat
+#
+# chkconfig: 345 80 15
+# description: Tomcat is a Servlet+JSP Engine.
+
+# Source function library.
+if [ -f /etc/rc.d/init.d/functions ]; then
+    . /etc/rc.d/init.d/functions
+fi
+
+TOMCAT_UNIQ="`basename $0`"
+TOMCAT_UNIQ="${TOMCAT_UNIQ#[S|K][0-9][0-9]}"
+
+# TOMCAT OPTS
+JAVA_HOME="<%= node['tomcat']['java_home'] %>"
+CATALINA_HOME="<%= node['tomcat']['root_dir'] %>/${TOMCAT_UNIQ}"
+
+# INIT OPTS
+CATALINA_LOCK="/var/lock/subsys/${TOMCAT_UNIQ}"
+TOMCAT_USER="<%= node['tomcat']['user'] %>"
+TOMCAT_GROUP="<%= node['tomcat']['group'] %>"
+TOMCAT_SCRIPT="${CATALINA_HOME}/bin/catalina.sh"
+PATH="${JAVA_HOME}/bin:${PATH}"
+
+if [ -f /etc/sysconfig/${TOMCAT_UNIQ} ]; then
+    . /etc/sysconfig/${TOMCAT_UNIQ}
+fi
+
+# See how we were called.
+ret=0
+CHECKPROC="Dcatalina.home=${CATALINA_HOME}.*org.apache.catalina.startup.Bootstrap"
+
+start() {
+    rm -f ${CATALINA_LOCK}
+    echo "Starting ${TOMCAT_UNIQ}: "
+    if [ -x "${TOMCAT_SCRIPT}" ]; then
+        su - ${TOMCAT_USER} -c "${TOMCAT_SCRIPT} start"
+        ret=$?
+    else
+        echo "${TOMCAT_SCRIPT} is not found."
+    fi
+    echo
+    if [ ${ret} -eq 0 ]; then
+        touch ${CATALINA_LOCK}
+        return 0
+    else
+        return 1
+    fi
+}
+
+stop() {
+    echo "Stopping ${TOMCAT_UNIQ}: "
+    if [ -x "${TOMCAT_SCRIPT}" ]; then
+        su - ${TOMCAT_USER} -c "${TOMCAT_SCRIPT} stop"
+        ret=$?
+    else
+        echo "${TOMCAT_SCRIPT} is not found."
+    fi
+    echo
+    if [ ${ret} -eq 0 ]; then
+        rm -f ${CATALINA_LOCK}
+        return 0
+    else
+        return 1
+    fi
+}
+
+status() {
+    if [ ! -z "${CATALINA_PID}" -a -e "${CATALINA_PID}" ]; then
+        read kpid < ${CATALINA_PID}
+        if checkpid ${kpid} 2>&1; then
+            echo "${TOMCAT_UNIQ} is running (${kpid})"
+            return 0
+        else
+            echo "The lock file was found but no process running for pid ${kpid}."
+            return 1
+        fi
+    else
+        local pid="$(pgrep -u ${TOMCAT_USER} -f ${CHECKPROC})"
+        if [ -n "${pid}" ]; then
+            echo "${TOMCAT_UNIQ} is running (${pid}) but no PID file exists (or it's empty)."
+            return 0
+        else
+            echo "${TOMCAT_UNIQ} is stopped."
+            return 1
+        fi
+    fi
+}
+
+# See how we were called.
+case "$1" in
+  start)
+        #create_setenv
+        start
+        ret=$?
+        ;;
+  stop)
+        stop
+        ret=$?
+        ;;
+  restart)
+        stop
+        start
+        ret=$?
+        ;;
+  status)
+        status
+        ret=$?
+        ;;
+  *)
+        echo "Usage: ${0} {start|stop|restart|status}"
+        ret=1
+esac
+
+exit ${ret}
+
